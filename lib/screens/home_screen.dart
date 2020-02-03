@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rantpad_one/screens/form_add_screen.dart';
 import 'package:rantpad_one/utils/ApiService.dart';
 import '../models/Post.dart';
 
@@ -8,6 +9,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  BuildContext context;
   ApiService apiService;
 
   @override
@@ -38,9 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-Widget _buildListView(List<Post> posts) {
+  Widget _buildListView(List<Post> posts) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
     child: ListView.builder(
@@ -65,11 +66,44 @@ Widget _buildListView(List<Post> posts) {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
                         FlatButton(
-                          onPressed: (){},
+                          onPressed: (){
+                            showDialog(context: context, builder: (context){
+                              return AlertDialog(
+                                title: Text("Warning"),
+                                content: Text("Are you sure want to delete post data ${post.title}?"),
+                                actions: <Widget>[
+                                  FlatButton(
+                                    child: Text("Yes"),
+                                    onPressed: (){
+                                      Navigator.pop(context);
+                                      apiService.deletePost(post.id).then((isSuccess){
+                                        if(isSuccess){
+                                          setState((){});
+                                          Scaffold.of(this.context).showSnackBar(SnackBar(content: Text("Post deleted successfully")));
+                                        }else{
+                                          Scaffold.of(this.context).showSnackBar(SnackBar(content: Text("Post deletion failed.")));
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Text("No"),
+                                    onPressed: (){
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            });
+                          },
                           child: Text("Delete", style: TextStyle(color: Colors.red),),
                         ),
                         FlatButton(
-                          onPressed: (){},
+                          onPressed:() {
+                            Navigator.push(context, MaterialPageRoute(builder: (context){
+                              return FormAddScreen(post: post);
+                            }));
+                          },
                           child: Text("Edit", style: TextStyle(color: Colors.blue),),
                         ),
                       ],
@@ -82,3 +116,6 @@ Widget _buildListView(List<Post> posts) {
         }),
   );
 }
+
+}
+
